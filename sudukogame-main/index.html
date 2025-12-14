@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Puzzle Game</title>
+<style>
+    body {
+        font-family: Arial;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 70vh;
+        background: #f2f2f2;
+    }
+
+    h2 { margin-bottom: 20px; }
+
+    #board {
+        width: 300px;
+        height: 300px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+        position: relative;
+    }
+
+    .tile {
+        background: #1976d2;
+        color: white;
+        font-size: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .empty {
+        background: transparent;
+        cursor: default;
+    }
+
+    /* SOLVED OVERLAY */
+    #solved-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        font-size: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-weight: bold;
+        border-radius: 10px;
+        display: none;
+        z-index: 10;
+    }
+
+    /* Dog pop-up animation */
+    #dog-container {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        text-align: center;
+        animation: bounce 1s infinite ease-in-out;
+    }
+
+    #speech {
+        background: white;
+        padding: 10px 15px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        font-size: 1rem;
+    }
+
+    @keyframes bounce {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0); }
+    }
+</style>
+</head>
+<body>
+
+<h2>Sliding Puzzle Game</h2>
+
+<div id="board">
+    <div id="solved-overlay">PUZZLE SOLVED!</div>
+</div>
+
+<div id="dog-container">
+    <div id="speech">🎉 Congratulations! You earned task as a prize!</div>
+    <div class="tenor-gif-embed" data-postid="24314518" 
+    data-share-method="host" data-aspect-ratio="1.07383" data-width="60%">
+        <a href="https://tenor.com/view/dog-happy-miss-you-tail-gif-24314518">Dog Happy GIF</a>
+    </div>
+    <script async src="https://tenor.com/embed.js"></script>
+</div>
+
+<script>
+    let tiles = ["1","2","3","4","5","6","7","8",""];
+    let gameFinished = false;
+
+    const board = document.getElementById("board");
+    const overlay = document.getElementById("solved-overlay");
+    const dog = document.getElementById("dog-container");
+
+    /* legal move mapping */
+    const moves = {
+        0:[1,3], 1:[0,2,4], 2:[1,5],
+        3:[0,4,6], 4:[1,3,5,7], 5:[2,4,8],
+        6:[3,7], 7:[4,6,8], 8:[5,7]
+    };
+
+    /* SOLVABLE SHUFFLE — 100 legal random moves */
+    function shuffleSolvable(){
+        let empty = 8;
+        for(let i=0;i<100;i++){
+            let possible = moves[empty];
+            let randomMove = possible[Math.floor(Math.random() * possible.length)];
+            [tiles[empty], tiles[randomMove]] = [tiles[randomMove], tiles[empty]];
+            empty = randomMove;
+        }
+    }
+
+    function drawBoard(){
+        board.innerHTML = "";
+        board.appendChild(overlay);
+
+        tiles.forEach((value,index)=>{
+            let t = document.createElement("div");
+            t.className = value === "" ? "tile empty" : "tile";
+            t.textContent = value;
+            t.onclick = () => moveTile(index);
+            board.appendChild(t);
+        });
+    }
+
+    function moveTile(i){
+        if(gameFinished) return;
+
+        let empty = tiles.indexOf("");
+        if(moves[i].includes(empty)){
+            [tiles[i], tiles[empty]] = [tiles[empty], tiles[i]];
+            drawBoard();
+            checkWin();
+        }
+    }
+
+    function checkWin(){
+        if(tiles.join("") === "12345678"){
+            gameFinished = true;
+            overlay.style.display = "flex"; // show SOLVED
+            dog.style.display = "block";    // show dog gif
+        }
+    }
+
+    shuffleSolvable();  // ENSURES solvable
+    drawBoard();
+</script>
+
+</body>
+</html>
